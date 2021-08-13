@@ -1,0 +1,81 @@
+SELECT genre_name, COUNT(singer_name) AS Количество
+FROM
+genres g
+JOIN singers_genres sg ON g.id = sg.genre_id
+JOIN singers s ON s.id = sg.singer_id
+GROUP BY genre_name
+ORDER BY genre_name;
+
+
+SELECT COUNT(track_name) AS Количество
+FROM albums a
+JOIN tracks t ON t.album_id = a.id
+WHERE year BETWEEN 2018 AND 2020;
+
+
+SELECT album_name, ROUND(AVG(length), 2) AS Cредняя_продолжительность
+FROM albums a
+JOIN tracks t ON t.album_id = a.id
+GROUP BY album_name;
+
+
+SELECT DISTINCT singer_name
+FROM albums a
+JOIN singers_albums sg ON a.id = sg.album_id
+JOIN singers s ON sg.singer_id = s.id
+WHERE year != 2020;
+
+
+SELECT collection_name
+FROM collections c
+JOIN collections_tracks ct ON c.id = ct.collection_id 
+JOIN tracks t ON ct.track_id = t.id
+JOIN albums a ON t.album_id = a.id
+JOIN singers_albums sa ON a.id = sa.album_id
+JOIN singers s ON sa.singer_id = s.id
+WHERE singer_name = 'Bruno Mars'
+GROUP BY collection_name;
+
+
+SELECT album_name
+FROM albums a 
+LEFT JOIN singers_albums sa ON a.id = sa.album_id
+LEFT JOIN singers s ON sa.singer_id = s.id
+LEFT JOIN singers_genres sg ON s.id = sg.singer_id
+LEFT JOIN genres g ON sg.genre_id = g.id
+GROUP BY album_name
+HAVING COUNT(DISTINCT g.genre_name) > 1;
+
+
+SELECT track_name
+FROM tracks t
+LEFT JOIN collections_tracks ct ON t.id = ct.track_id
+WHERE ct.track_id is null;
+
+
+SELECT s.singer_name, t.length
+FROM tracks as t
+LEFT JOIN albums a ON a.id = t.album_id
+LEFT JOIN singers_albums sa ON a.id = sa.album_id
+LEFT JOIN singers s ON sa.singer_id = s.id
+GROUP BY s.singer_name, t.length
+HAVING t.length = (SELECT MIN(length) FROM tracks);
+
+
+SELECT DISTINCT album_name
+FROM albums a
+LEFT JOIN tracks t ON t.album_id = a.id
+WHERE t.album_id IN (
+SELECT album_id
+FROM tracks
+GROUP BY album_id
+HAVING COUNT(id) = (
+	SELECT count(id)
+	FROM tracks
+	GROUP BY album_id
+	ORDER BY COUNT
+	LIMIT 1
+	)
+);
+
+
